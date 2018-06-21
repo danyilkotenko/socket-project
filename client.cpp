@@ -58,7 +58,7 @@ int main(int argc, char const *argv[])
     printf("\nConnection to the server port\n");
     do{
     int choice;
-    printf("Registration:1\nLogin:2\nChat:3\n");
+    printf("Registration:1\nLogin:2\n");
     scanf("%d", &choice);
     if(choice!= 1 && choice!= 2 && choice!=3 ){
     printf("Please select the option\n");
@@ -83,7 +83,8 @@ int main(int argc, char const *argv[])
     }while(!logged);
     printf("Hello, %s\n", nameUser);
     ///////////////////////////////////////
-    if(logged){
+    while(logged){
+    //while(1){
         printf("%s: ", nameUser);
         scanf("%s", &buffer[0]);
         send(sock, buffer, strlen(buffer), 0);
@@ -98,8 +99,10 @@ int main(int argc, char const *argv[])
     {
         printf("Error in receiving data. \n");
     }else{
-        printf("Server: %s\n", buffer);
+        printf("Your message has been sent. \n");
     }
-}
-    return 0;
+  }
+  //return 0;
+ //}
+ return 0;
 }

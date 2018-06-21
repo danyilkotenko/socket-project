@@ -95,13 +95,26 @@ void thread_client(int socket){
 					}
 					fileUsers.close();
 
-					if (logged){
+					if(logged){
 						strcpy(nameUser, authRequest->username);
 						codeResponse.codeId = 200;
 						send(socket,&codeResponse,sizeof(code),0);
+						printf("User %s has connected\n",nameUser); 
+						while(1){
+							recv(socket, buffer, 1024, 0);
+						if(strcmp(buffer, ":exit") == 0){
+								printf("Disconnected");
+								break;
+						}else{
+							printf("%s:%s ",nameUser,buffer);
+							send(socket, buffer, strlen(buffer), 0);
+							bzero(buffer, sizeof(buffer));
+							}
+						}
 					}
-					else  codeResponse.codeId = 205;
-					send(socket,&codeResponse,sizeof(code),0);
+					else codeResponse.codeId = 205;
+					//send(socket,&codeResponse,sizeof(code),0);
+					send(socket, buffer, strlen(buffer), 0);
 				}
 				else {
 					printf("\nWe have a problem =(\n");
@@ -110,28 +123,7 @@ void thread_client(int socket){
 				}
 
 			}
-			printf("I connected user:%s \n",nameUser); 
-
-			if(logged)
-			{
-				msg_auth* authRequest = (msg_auth*) buffer;
-				code codeResponse;
-				if(authRequest->header.msgId == 3){
-				char buffer[1024];
-				while(1){
-				recv(socket, buffer, 1024, 0);
-				if(strcmp(buffer, ":exit") == 0){
-					printf("Disconnected");
-					break;
-				}else{
-					printf("Client: %s\n", buffer);
-					send(socket, buffer, strlen(buffer), 0);
-					bzero(buffer, sizeof(buffer));
-				}
-			}
-				close(socket);
-			}
-		}
+		close(socket);
 }
 
 int main(int argc, char const *argv[])
@@ -156,13 +148,13 @@ int main(int argc, char const *argv[])
     }
 
     // Forcefully attaching socket to the port 8080
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
+   	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
                                                   &opt, sizeof(opt)))
     {
         perror("setsockopt");
         exit(EXIT_FAILURE);
     }
-
+	
     printf("\n=>Socket server has been created...\n");
 
     memset(&address, '0', sizeof(address));
@@ -177,11 +169,22 @@ int main(int argc, char const *argv[])
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
-    if (listen(server_fd, 100) < 0)
+
+    /*if (listen(server_fd, 10) < 0)
     {
         perror("listen");
         exit(EXIT_FAILURE);
     }
+	*/
+
+	if(listen(server_fd, 10) == 0)
+	{
+		printf("Listening....\n");
+	}
+	else
+	{
+		printf("Error in binding! \n");
+	}
 
 while(1){
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
