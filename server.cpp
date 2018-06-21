@@ -69,9 +69,15 @@ void thread_client(int socket){
 						send(socket,&codeResponse,sizeof(code),0);
 						logged = true;
 						strcpy(nameUser, authRequest->username);
+						if(logged){
+						strcpy(nameUser, authRequest->username);
+						codeResponse.codeId = 200;
+						send(socket,&codeResponse,sizeof(code),0);
+						printf("User %s has connected\n",nameUser); 
 					}else{
 						codeResponse.codeId = 201;
-						send(socket,&codeResponse,sizeof(code),0);
+						//send(socket,&codeResponse,sizeof(code),0);
+						send(socket, buffer, strlen(buffer), 0);
 					}
 
 				}
@@ -100,18 +106,8 @@ void thread_client(int socket){
 						codeResponse.codeId = 200;
 						send(socket,&codeResponse,sizeof(code),0);
 						printf("User %s has connected\n",nameUser); 
-						while(1){
-							recv(socket, buffer, 1024, 0);
-						if(strcmp(buffer, ":exit") == 0){
-								printf("Disconnected");
-								break;
-						}else{
-							printf("%s:%s ",nameUser,buffer);
-							send(socket, buffer, strlen(buffer), 0);
-							bzero(buffer, sizeof(buffer));
-							}
-						}
 					}
+
 					else codeResponse.codeId = 205;
 					//send(socket,&codeResponse,sizeof(code),0);
 					send(socket, buffer, strlen(buffer), 0);
@@ -123,7 +119,23 @@ void thread_client(int socket){
 				}
 
 			}
-		close(socket);
+if(logged)
+	{
+      while(1){
+			recv(socket, buffer, 1024, 0);
+				if(strcmp(buffer, ":exit") == 0){
+						printf("Disconnected\n");
+						break;
+				}else{
+					//printf("%s:%s ",nameUser,buffer);
+					printf("%s :%s\n", nameUser, buffer);
+					send(socket, buffer, strlen(buffer), 0);
+					bzero(buffer, sizeof(buffer));
+					}
+			 }
+	   }  
+}
+	close(socket);
 }
 
 int main(int argc, char const *argv[])
@@ -177,7 +189,7 @@ int main(int argc, char const *argv[])
     }
 	*/
 
-	if(listen(server_fd, 10) == 0)
+	if(listen(server_fd, 100) == 0)
 	{
 		printf("Listening....\n");
 	}
